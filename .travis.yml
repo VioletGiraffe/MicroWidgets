@@ -7,4 +7,4 @@ install:
     - platformio lib -g install https://github.com/VioletGiraffe/cpp-template-utils
     - platformio lib -g install "Adafruit GFX Library"
 script:
-    - platformio ci --lib="." --board=due --board=esp32dev ./examples/TwoScreens/
+    - platformio ci --lib="." --board=due ./examples/TwoScreens/
