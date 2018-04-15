@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Size.h"
+#include "Rect.h"
 
 template <class ConcreteWidget>
 class Widget
@@ -10,7 +10,9 @@ public:
 		uint8_t frameWidth = 0;
 	};
 
-	Widget(const Point& topLeft = Point{ 0, 0 }, const Size& size = Size{ 0, 0 }) : _topLeft(topLeft), _size(size) {}
+	inline constexpr Widget() {}
+	inline explicit constexpr Widget(const Rect& rect = Rect()) : _rect(rect) {}
+	inline explicit constexpr Widget(const Point& topLeft, const Size& size) : _rect(topLeft, size) {}
 
 	const Attributes& attributes() const {
 		return _attributes;
@@ -20,20 +22,20 @@ public:
 		_attributes = attrs;
 	}
 
-	Point topLeft() const {
-		return _topLeft;
+	inline Point topLeft() const {
+		return _rect.topLeft();
 	}
 
-	Size size() const {
-		return _size;
+	inline Size size() const {
+		return _rect.size();
 	}
 
-	uint16_t width() const {
-		return _size.width();
+	inline uint16_t width() const {
+		return _rect.width();
 	}
 
-	uint16_t height() const {
-		return _size.height();
+	inline uint16_t height() const {
+		return _rect.height();
 	}
 
 	void update() {
@@ -43,16 +45,15 @@ public:
 protected:
 	// Events
 	void onDraw() {
-		onDraw(_size);
+		onDraw(_rect);
 	}
 
 	// Polymorphic function - must be redefined by the subclass
-	void onDraw(Size regionToUpdate) {
-		static_cast<ConcreteWidget*>(this)->onDraw(regionToUpdate);
+	void onDraw(Rect updateRect, Rect excludeRect = Rect()) {
+		static_cast<ConcreteWidget*>(this)->onDraw(updateRect, excludeRect);
 	}
 
 protected:
 	Attributes _attributes;
-	Point _topLeft;
-	Size _size;
+	Rect _rect;
 };
