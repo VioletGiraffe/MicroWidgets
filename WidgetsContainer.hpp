@@ -6,7 +6,7 @@
 
 template <class... ListOfWidgetTypes>
 struct WidgetsContainer {
-	WidgetsContainer() = default;
+	constexpr WidgetsContainer() = default;
 
 	template <class... ListOfWidgetTypes>
 	constexpr WidgetsContainer(ListOfWidgetTypes&&... widgets) : _widgets(std::forward<ListOfWidgetTypes>(widgets)...) {}
