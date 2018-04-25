@@ -67,7 +67,7 @@ public:
 			break;
 		}
 
-		return out;     
+		return out;
 	}
 
 	inline uint16_t toRgb565() const {
@@ -84,6 +84,18 @@ public:
 
 	inline uint32_t toBgr() const {
 		return to32bit(_b, _g, _r);
+	}
+
+	inline uint8_t r() const {
+		return _r;
+	}
+
+	inline uint8_t g() const {
+		return _g;
+	}
+
+	inline uint8_t b() const {
+		return _b;
 	}
 
 // Predefined colors
