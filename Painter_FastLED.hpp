@@ -10,44 +10,49 @@ class FastLedDisplayPainter : public DisplayPainter<FastLedDisplayPainter<Width,
 {
 	using Parent = DisplayPainter<FastLedDisplayPainter<Width, Height, DataPin>, decltype(FastLED)>;
 
-	struct FastLedWrapper {
-		inline FastLedWrapper() {
-			FastLED.addLeds<NEOPIXEL, DataPin>(_screenBuffer, Width * Height);
-		}
-
-		CRGB _screenBuffer[Width * Height];
-	};
-
-	static FastLedWrapper _fastLedWrapper;
+	constexpr static uint16_t NumLeds = Width * Height;
 
 public:
+	~FastLedDisplayPainter() {
+		FastLED.show();
+	}
+
 	void rect(const Point& topLeft, const Size& size, const Color& color) {
-		
+		rect(topLeft, topLeft + size, color);
 	}
 
 	void rect(const Point& topLeft, const Point& bottomRight, const Color& color) {
-		
-	}
-
-	void fillRect(const Point& topLeft, const Size& size, const Color& color) {
-		
-	}
-
-	void fillRect(const Point& topLeft, const Point& bottomRight, const Color& color) {
-		
-	}
-
-	void fillScreen(const Color& color) {
-		for(auto& pixel: FastLedDisplayPainter::_screenBuffer)
+		// Fill the horizontal lines
+		for (uint16_t x = topLeft.x(); x < bottomRight.x(); ++x)
 		{
-			pixel.r = color.r();
-			pixel.g = color.g();
-			pixel.b = color.b();
+			fillCrgbFromColor(this->_screenBuffer[topLeft.y() * Width + x], color);
+			fillCrgbFromColor(this->_screenBuffer[bottomRight.y() * Width + x], color);
+		}
+
+		// Fill in the vertical lines
+		for (uint16_t y = topLeft.y(); y < bottomRight.y(); ++y)
+		{
+			fillCrgbFromColor(this->_screenBuffer[y * Width + topLeft.x()], color);
+			fillCrgbFromColor(this->_screenBuffer[y * Width + bottomRight.x()], color);
 		}
 	}
 
+	void fillRect(const Point& topLeft, const Size& size, const Color& color) {
+		for (uint16_t y = topLeft.y(); y < topLeft.y() + size.height(); ++y)
+			drawFastHLine(Point(topLeft.x(), y), size.width(), color);
+	}
+
+	void fillRect(const Point& topLeft, const Point& bottomRight, const Color& color) {
+		fillRect(topLeft, bottomRight - topLeft, color);
+	}
+
+	void fillScreen(const Color& color) {
+		for (auto& pixel: this->_screenBuffer)
+			fillCrgbFromColor(pixel, color);
+	}
+
 	void setPixel(const Point& pixel, const Color& color) {
-		
+		fillCrgbFromColor(this->_screenBuffer[pixel.y() * Width + pixel.x()], color);
 	}
 
 	inline void setPixel(uint16_t x, uint16_t y, const Color& color) {
@@ -55,11 +60,14 @@ public:
 	}
 
 	void drawFastVLine(const Point& start, uint16_t height, const Color& color) {
-		
+		for (uint16_t yOffset = start.y() * Width; yOffset < (start.y() + height) * Width; yOffset += Width)
+			fillCrgbFromColor(this->_screenBuffer[yOffset + start.x()], color);
 	}
 
 	void drawFastHLine(const Point& start, uint16_t width, const Color& color) {
-		
+		const uint16_t yOffset = start.y() * Width;
+		for (uint16_t x = start.x(); x < start.x() + width; ++x)
+			fillCrgbFromColor(this->_screenBuffer[yOffset + x], color);
 	}
 
 	void drawLine(const Point& start, const Point& end, const Color& color) {
@@ -98,4 +106,22 @@ public:
 	static constexpr uint16_t screenHeight() {
 		return Height;
 	}
+
+private:
+	static inline void fillCrgbFromColor(CRGB& crgb, const Color& color) {
+		crgb.r = color.r;
+		crgb.g = color.g;
+		crgb.b = color.b;
+	}
+
+private:
+	struct FastLedWrapper {
+		inline FastLedWrapper() {
+			FastLED.addLeds<NEOPIXEL, DataPin>(_screenBuffer, Width * Height);
+		}
+
+		CRGB _screenBuffer[NumLeds];
+	};
+
+	static FastLedWrapper _fastLedWrapper;
 };
