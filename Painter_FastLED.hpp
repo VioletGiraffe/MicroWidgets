@@ -5,12 +5,20 @@
 
 #include <utility>
 
-template <uint16_t Width, uint16_t Height>
-class FastLedDisplayPainter : public DisplayPainter<FastLedDisplayPainter, decltype(FastLED)>
+template <uint16_t Width, uint16_t Height, uint8_t DataPin>
+class FastLedDisplayPainter : public DisplayPainter<FastLedDisplayPainter<Width, Height, DataPin>, decltype(FastLED)>
 {
-	using Parent = DisplayPainter<FastLedDisplayPainter, decltype(FastLED)>;
+	using Parent = DisplayPainter<FastLedDisplayPainter<Width, Height, DataPin>, decltype(FastLED)>;
 
-	static CRGB _screenBuffer[Width * Height];
+	struct FastLedWrapper {
+		inline FastLedWrapper() {
+			FastLED.addLeds<NEOPIXEL, DataPin>(_screenBuffer, Width * Height);
+		}
+
+		CRGB _screenBuffer[Width * Height];
+	};
+
+	static FastLedWrapper _fastLedWrapper;
 
 public:
 	void rect(const Point& topLeft, const Size& size, const Color& color) {
@@ -30,14 +38,19 @@ public:
 	}
 
 	void fillScreen(const Color& color) {
-		
+		for(auto& pixel: FastLedDisplayPainter::_screenBuffer)
+		{
+			pixel.r = color.r();
+			pixel.g = color.g();
+			pixel.b = color.b();
+		}
 	}
 
 	void setPixel(const Point& pixel, const Color& color) {
 		
 	}
 
-	void setPixel(uint16_t x, uint16_t y, const Color& color) {
+	inline void setPixel(uint16_t x, uint16_t y, const Color& color) {
 		setPixel(Point{x, y}, color);
 	}
 
