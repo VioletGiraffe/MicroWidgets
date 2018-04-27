@@ -23,17 +23,19 @@ public:
 
 	void rect(const Point& topLeft, const Point& bottomRight, const Color& color) {
 		// Fill the horizontal lines
+
+		const auto fastLedColor = crgbFromColor(color);
 		for (uint16_t x = topLeft.x(); x < bottomRight.x(); ++x)
 		{
-			fillCrgbFromColor(this->_screenBuffer[topLeft.y() * Width + x], color);
-			fillCrgbFromColor(this->_screenBuffer[bottomRight.y() * Width + x], color);
+			this->_screenBuffer[topLeft.y() * Width + x] = fastLedColor;
+			this->_screenBuffer[bottomRight.y() * Width + x] = fastLedColor;
 		}
 
 		// Fill in the vertical lines
 		for (uint16_t y = topLeft.y(); y < bottomRight.y(); ++y)
 		{
-			fillCrgbFromColor(this->_screenBuffer[y * Width + topLeft.x()], color);
-			fillCrgbFromColor(this->_screenBuffer[y * Width + bottomRight.x()], color);
+			this->_screenBuffer[y * Width + topLeft.x()] = fastLedColor;
+			this->_screenBuffer[y * Width + bottomRight.x()] = fastLedColor;
 		}
 	}
 
@@ -47,12 +49,13 @@ public:
 	}
 
 	void fillScreen(const Color& color) {
+		const auto fastLedColor = crgbFromColor(color);
 		for (auto& pixel: this->_screenBuffer)
-			fillCrgbFromColor(pixel, color);
+			pixel = fastLedColor;
 	}
 
 	void setPixel(const Point& pixel, const Color& color) {
-		fillCrgbFromColor(this->_screenBuffer[pixel.y() * Width + pixel.x()], color);
+		this->_screenBuffer[pixel.y() * Width + pixel.x()] = crgbFromColor(color);
 	}
 
 	inline void setPixel(uint16_t x, uint16_t y, const Color& color) {
@@ -60,18 +63,36 @@ public:
 	}
 
 	void drawFastVLine(const Point& start, uint16_t height, const Color& color) {
+		const auto fastLedColor = crgbFromColor(color);
 		for (uint16_t yOffset = start.y() * Width; yOffset < (start.y() + height) * Width; yOffset += Width)
-			fillCrgbFromColor(this->_screenBuffer[yOffset + start.x()], color);
+			this->_screenBuffer[yOffset + start.x()] = fastLedColor;
 	}
 
 	void drawFastHLine(const Point& start, uint16_t width, const Color& color) {
 		const uint16_t yOffset = start.y() * Width;
+		const auto fastLedColor = crgbFromColor(color);
 		for (uint16_t x = start.x(); x < start.x() + width; ++x)
-			fillCrgbFromColor(this->_screenBuffer[yOffset + x], color);
+			this->_screenBuffer[yOffset + x] = fastLedColor;
 	}
 
+	// Reference Bresenham's line algorithm implementation from https://rosettacode.org/wiki/Bitmap/Bresenham%27s_line_algorithm#C
 	void drawLine(const Point& start, const Point& end, const Color& color) {
-		
+		int x0 = start.x(), y0 = start.y(), x1 = end.x(), y1 = end.y();
+		int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+		int dy = abs(y1 - y0), sy = y0 < y1 ? 1 : -1; 
+		int err = (dx>dy ? dx : -dy)/2, e2;
+
+		const auto fastLedColor = crgbFromColor(color);
+		for(;;)
+		{
+			this->_screenBuffer[y0 * Width + x0] = fastLedColor;
+			if (x0 == x1 && y0 == y1)
+				break;
+
+			const auto e2 = err;
+			if (e2 >-dx) { err -= dy; x0 += sx; }
+			if (e2 < dy) { err += dx; y0 += sy; }
+		}
 	}
 
 	void setCursor(const Point& pos) {
@@ -108,10 +129,13 @@ public:
 	}
 
 private:
-	static inline void fillCrgbFromColor(CRGB& crgb, const Color& color) {
+	static inline CRGB crgbFromColor(const Color& color) {
+		CRGB crgb;
 		crgb.r = color.r;
 		crgb.g = color.g;
 		crgb.b = color.b;
+
+		return crgb;
 	}
 
 private:
