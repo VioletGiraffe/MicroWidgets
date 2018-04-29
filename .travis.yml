@@ -6,6 +6,7 @@ install:
     - platformio update
     - platformio lib -g install https://github.com/VioletGiraffe/cpp-template-utils
     - platformio lib -g install "Adafruit GFX Library"
+    - platformio lib -g install "FastLED"
 script:
     - platformio ci --lib="." --board=due ./examples/TwoScreens/
     - platformio ci --lib="." --board=due ./examples/RGBLedMatrix/
