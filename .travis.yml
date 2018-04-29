@@ -8,3 +8,4 @@ install:
     - platformio lib -g install "Adafruit GFX Library"
 script:
     - platformio ci --lib="." --board=due ./examples/TwoScreens/
+    - platformio ci --lib="." --board=due ./examples/RGBLedMatrix/
