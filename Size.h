@@ -37,9 +37,23 @@ public:
 		return Point{_x + s.width(), _y + s.height()};
 	}
 
+	inline Point operator-(const Size& s) const {
+		return Point{_x - s.width(), _y - s.height()};
+	}
+
+	inline Point operator+(const uint16_t offset) const {
+		return Point{_x + offset, _y + offset};
+	}
+
+	inline Point operator-(const uint16_t offset) const {
+		return *this + (-offset);
+	}
+
 	inline Size operator-(const Point& other) const {
 		return Size{_x - other._x, _y - other._y};
 	}
+
+	
 
 private:
 	uint16_t _x = 0, _y = 0; // 16K resolution ought to be enough for anybody

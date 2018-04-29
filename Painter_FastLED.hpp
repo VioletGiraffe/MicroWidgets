@@ -18,24 +18,25 @@ public:
 	}
 
 	void rect(const Point& topLeft, const Size& size, const Color& color) {
-		rect(topLeft, topLeft + size, color);
+		rect(topLeft, topLeft + size - 1, color);
 	}
 
 	void rect(const Point& topLeft, const Point& bottomRight, const Color& color) {
 		// Fill the horizontal lines
 
 		const auto fastLedColor = crgbFromColor(color);
-		for (uint16_t x = topLeft.x(); x < bottomRight.x(); ++x)
+		for (uint16_t x = topLeft.x(), rightX = bottomRight.x(); x <= rightX; ++x)
 		{
-			this->_screenBuffer[topLeft.y() * Width + x] = fastLedColor;
-			this->_screenBuffer[bottomRight.y() * Width + x] = fastLedColor;
+			FastLedDisplayPainter<Width, Height, DataPin>::_fastLedWrapper._screenBuffer[topLeft.y() * Width + x] = fastLedColor;
+			FastLedDisplayPainter<Width, Height, DataPin>::_fastLedWrapper._screenBuffer[bottomRight.y() * Width + x] = fastLedColor;
 		}
 
 		// Fill in the vertical lines
-		for (uint16_t y = topLeft.y(); y < bottomRight.y(); ++y)
+		// The first and last horizontal lines of the rect had already been filled in completely by the previous loop over x coordinate
+		for (uint16_t y = topLeft.y() + 1, bottomY = bottomRight.y(); y < bottomY; ++y)
 		{
-			this->_screenBuffer[y * Width + topLeft.x()] = fastLedColor;
-			this->_screenBuffer[y * Width + bottomRight.x()] = fastLedColor;
+			FastLedDisplayPainter<Width, Height, DataPin>::_fastLedWrapper._screenBuffer[y * Width + topLeft.x()] = fastLedColor;
+			FastLedDisplayPainter<Width, Height, DataPin>::_fastLedWrapper._screenBuffer[y * Width + bottomRight.x()] = fastLedColor;
 		}
 	}
 
@@ -50,12 +51,12 @@ public:
 
 	void fillScreen(const Color& color) {
 		const auto fastLedColor = crgbFromColor(color);
-		for (auto& pixel: this->_screenBuffer)
+		for (auto& pixel: this->_fastLedWrapper._screenBuffer)
 			pixel = fastLedColor;
 	}
 
 	void setPixel(const Point& pixel, const Color& color) {
-		this->_screenBuffer[pixel.y() * Width + pixel.x()] = crgbFromColor(color);
+		this->_fastLedWrapper._screenBuffer[pixel.y() * Width + pixel.x()] = crgbFromColor(color);
 	}
 
 	inline void setPixel(uint16_t x, uint16_t y, const Color& color) {
@@ -65,14 +66,14 @@ public:
 	void drawFastVLine(const Point& start, uint16_t height, const Color& color) {
 		const auto fastLedColor = crgbFromColor(color);
 		for (uint16_t yOffset = start.y() * Width; yOffset < (start.y() + height) * Width; yOffset += Width)
-			this->_screenBuffer[yOffset + start.x()] = fastLedColor;
+			this->_fastLedWrapper._screenBuffer[yOffset + start.x()] = fastLedColor;
 	}
 
 	void drawFastHLine(const Point& start, uint16_t width, const Color& color) {
 		const uint16_t yOffset = start.y() * Width;
 		const auto fastLedColor = crgbFromColor(color);
 		for (uint16_t x = start.x(); x < start.x() + width; ++x)
-			this->_screenBuffer[yOffset + x] = fastLedColor;
+			this->_fastLedWrapper._screenBuffer[yOffset + x] = fastLedColor;
 	}
 
 	// Reference Bresenham's line algorithm implementation from https://rosettacode.org/wiki/Bitmap/Bresenham%27s_line_algorithm#C
@@ -85,7 +86,7 @@ public:
 		const auto fastLedColor = crgbFromColor(color);
 		for(;;)
 		{
-			this->_screenBuffer[y0 * Width + x0] = fastLedColor;
+			this->_fastLedWrapper._screenBuffer[y0 * Width + x0] = fastLedColor;
 			if (x0 == x1 && y0 == y1)
 				break;
 
@@ -131,9 +132,9 @@ public:
 private:
 	static inline CRGB crgbFromColor(const Color& color) {
 		CRGB crgb;
-		crgb.r = color.r;
-		crgb.g = color.g;
-		crgb.b = color.b;
+		crgb.r = color.r();
+		crgb.g = color.g();
+		crgb.b = color.b();
 
 		return crgb;
 	}
@@ -149,3 +150,7 @@ private:
 
 	static FastLedWrapper _fastLedWrapper;
 };
+
+template <uint16_t Width, uint16_t Height, uint8_t DataPin>
+typename FastLedDisplayPainter<Width, Height, DataPin>::FastLedWrapper
+    FastLedDisplayPainter<Width, Height, DataPin>::_fastLedWrapper;
