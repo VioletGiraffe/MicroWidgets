@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Painter.h"
+#include "font-5x7.hpp"
+
 #include <FastLED.h>
 
 #include <utility>
@@ -9,6 +11,7 @@ template <uint16_t Width, uint16_t Height, uint8_t DataPin>
 class FastLedDisplayPainter : public DisplayPainter<FastLedDisplayPainter<Width, Height, DataPin>, decltype(FastLED)>
 {
 	using Parent = DisplayPainter<FastLedDisplayPainter<Width, Height, DataPin>, decltype(FastLED)>;
+	using Font = Font5x7;
 
 	constexpr static uint16_t NumLeds = Width * Height;
 
@@ -97,28 +100,41 @@ public:
 	}
 
 	void setCursor(const Point& pos) {
-		
+		_textCursor = pos;
 	}
 
 	void setTextColor(const Color& color) {
-		
+		_textColorForeground = color;
 	}
 
 	void setTextColor(const Color& c, const Color& bg) {
-		
+		_textColorForeground = c;
+		_textColorBackground = bg;
 	}
 
 	void setTextSize(uint8_t s) {
-		
+		_textSize = s;
 	}
 
-	void setTextWrap(bool w) {
-		
+	void setTextWrap(bool wrap) {
+		static_assert(DataPin == 0 && Width == 0 && Height == 0, "Not implemented");
 	}
 
 	template <typename ...Args>
 	void print(Args&&... args) {
 		
+	}
+
+	template <size_t NumChars>
+	void print(const char (&text)[NumChars]) {
+		for (const char c: text)
+			print(c);
+	}
+
+	void print(const char asciiCharacter) {
+		for (uint16_t glyphY = 0; glyphY < Font::fontHeight; ++glyphY)
+			for (uint16_t glyphX = 0; glyphX < Font::fontWidth; ++glyphX)
+				setPixel(Point{_textCursor.x() + glyphX, _textCursor.y() + glyphY}, Font::fontBit(asciiCharacter, glyphX, glyphY) ? _textColorForeground : _textColorBackground);
 	}
 
 	static constexpr uint16_t screenWidth() {
@@ -149,8 +165,10 @@ private:
 	};
 
 	static FastLedWrapper _fastLedWrapper;
+	Color _textColorForeground {10, 10, 10}, _textColorBackground;
+	Point _textCursor;
+	uint8_t _textSize;
 };
 
 template <uint16_t Width, uint16_t Height, uint8_t DataPin>
-typename FastLedDisplayPainter<Width, Height, DataPin>::FastLedWrapper
-    FastLedDisplayPainter<Width, Height, DataPin>::_fastLedWrapper;
+typename FastLedDisplayPainter<Width, Height, DataPin>::FastLedWrapper FastLedDisplayPainter<Width, Height, DataPin>::_fastLedWrapper;
