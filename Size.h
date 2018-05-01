@@ -33,6 +33,14 @@ public:
 		return _y;
 	}
 
+	inline uint16_t& x() {
+		return _x;
+	}
+
+	inline uint16_t& y() {
+		return _y;
+	}
+
 	inline Point operator+(const Size& s) const {
 		return Point{_x + s.width(), _y + s.height()};
 	}

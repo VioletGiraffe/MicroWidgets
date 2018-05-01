@@ -9,8 +9,8 @@
 class Font5x7
 {
 public:
-	static constexpr uint8_t fontWidth = 5;
-	static constexpr uint8_t fontHeight = 7;
+	static constexpr uint8_t symbolWidth = 5;
+	static constexpr uint8_t symbolHeight = 7;
 
 	inline static bool fontBit(const char character, const uint8_t column, const uint8_t row)
 	{

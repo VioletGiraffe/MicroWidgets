@@ -132,9 +132,11 @@ public:
 	}
 
 	void print(const char asciiCharacter) {
-		for (uint16_t glyphY = 0; glyphY < Font::fontHeight; ++glyphY)
-			for (uint16_t glyphX = 0; glyphX < Font::fontWidth; ++glyphX)
+		for (uint16_t glyphY = 0; glyphY < Font::symbolHeight; ++glyphY)
+			for (uint16_t glyphX = 0; glyphX < Font::symbolWidth; ++glyphX)
 				setPixel(Point{_textCursor.x() + glyphX, _textCursor.y() + glyphY}, Font::fontBit(asciiCharacter, glyphX, glyphY) ? _textColorForeground : _textColorBackground);
+
+		_textCursor.x() += Font::symbolWidth;
 	}
 
 	static constexpr uint16_t screenWidth() {
