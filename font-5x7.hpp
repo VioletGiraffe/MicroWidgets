@@ -14,7 +14,7 @@ public:
 
 	inline static bool fontBit(const char character, const uint8_t column, const uint8_t row)
 	{
-		return (font_data[(uint8_t)character + column] & 1<<(7 - row)) != 0;
+		return (font_data[(uint8_t)character * symbolWidth + column] & 1<<row) != 0;
 	}
 
 private:

@@ -7,11 +7,10 @@
 
 #include <utility>
 
-template <uint16_t Width, uint16_t Height, uint8_t DataPin>
+template <uint16_t Width, uint16_t Height, uint8_t DataPin, typename Font = Font5x7>
 class FastLedDisplayPainter : public DisplayPainter<FastLedDisplayPainter<Width, Height, DataPin>, decltype(FastLED)>
 {
 	using Parent = DisplayPainter<FastLedDisplayPainter<Width, Height, DataPin>, decltype(FastLED)>;
-	using Font = Font5x7;
 
 	constexpr static uint16_t NumLeds = Width * Height;
 
@@ -172,5 +171,5 @@ private:
 	uint8_t _textSize;
 };
 
-template <uint16_t Width, uint16_t Height, uint8_t DataPin>
-typename FastLedDisplayPainter<Width, Height, DataPin>::FastLedWrapper FastLedDisplayPainter<Width, Height, DataPin>::_fastLedWrapper;
+template <uint16_t Width, uint16_t Height, uint8_t DataPin, typename Font>
+typename FastLedDisplayPainter<Width, Height, DataPin, Font>::FastLedWrapper FastLedDisplayPainter<Width, Height, DataPin, Font>::_fastLedWrapper;
