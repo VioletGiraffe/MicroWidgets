@@ -135,7 +135,7 @@ public:
 			for (uint16_t glyphX = 0; glyphX < Font::symbolWidth; ++glyphX)
 				setPixel(Point{_textCursor.x() + glyphX, _textCursor.y() + glyphY}, Font::fontBit(asciiCharacter, glyphX, glyphY) ? _textColorForeground : _textColorBackground);
 
-		_textCursor.x() += Font::symbolWidth;
+		_textCursor.x() += Font::symbolWidth + 1;
 	}
 
 	static constexpr uint16_t screenWidth() {
