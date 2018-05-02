@@ -4,9 +4,18 @@ python:
 install:
     - pip install -U platformio
     - platformio update
+script:
+    - platformio lib -g install "FastLED"
     - platformio lib -g install https://github.com/VioletGiraffe/cpp-template-utils
     - platformio lib -g install "Adafruit GFX Library"
-    - platformio lib -g install "FastLED"
-script:
-    - platformio ci --lib="." --board=due ./examples/TwoScreens/
-    - platformio ci --lib="." --board=due ./examples/RGBLedMatrix/
+    - platformio ci --lib="." --project-option="build_flags=-std=gnu++1y" --board=due ./examples/TwoScreens/
+    - platformio ci --lib="." --project-option="build_flags=-std=gnu++1y" --board=due ./examples/RGBLedMatrix/
+    - platformio lib -g install https://github.com/VioletGiraffe/StandardCPlusPlus
+    - platformio ci --lib="." --project-option="build_flags=-std=c++14" --board=uno ./examples/TwoScreens/
+    - platformio ci --lib="." --project-option="build_flags=-std=c++14" --board=uno ./examples/RGBLedMatrix/
+    - rm -rf /home/travis/.platformio/lib/
+    - platformio lib -g install https://github.com/samguyer/FastLED
+    - platformio lib -g install https://github.com/VioletGiraffe/cpp-template-utils
+    - platformio lib -g install "Adafruit GFX Library"
+    - platformio ci --lib="." --project-option="build_flags=-std=c++14" --board=esp32dev ./examples/TwoScreens/
+    - platformio ci --lib="." --project-option="build_flags=-std=c++14" --board=esp32dev ./examples/RGBLedMatrix/
