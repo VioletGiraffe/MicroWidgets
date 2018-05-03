@@ -7,11 +7,13 @@
 
 #include <utility>
 
-template <uint16_t Width, uint16_t Height, uint8_t DataPin, typename Font = Font5x7>
-class FastLedDisplayPainter : public DisplayPainter<FastLedDisplayPainter<Width, Height, DataPin>, decltype(FastLED)>
+template <uint16_t LogicalWidth, uint16_t LogicalHeight, uint8_t DataPin, bool Transpose = true, typename Font = Font5x7>
+class FastLedDisplayPainter : public DisplayPainter<FastLedDisplayPainter<LogicalWidth, LogicalHeight, DataPin, Transpose, Font>, decltype(FastLED)>
 {
-	using Parent = DisplayPainter<FastLedDisplayPainter<Width, Height, DataPin>, decltype(FastLED)>;
+	using Parent = DisplayPainter<FastLedDisplayPainter<LogicalWidth, LogicalHeight, DataPin, Transpose, Font>, decltype(FastLED)>;
 
+	constexpr static uint16_t Width = Transpose ? LogicalHeight : LogicalWidth;
+	constexpr static uint16_t Height = Transpose ? LogicalWidth : LogicalHeight;
 	constexpr static uint16_t NumLeds = Width * Height;
 
 public:
@@ -29,16 +31,16 @@ public:
 		const auto fastLedColor = crgbFromColor(color);
 		for (uint16_t x = topLeft.x(), rightX = bottomRight.x(); x <= rightX; ++x)
 		{
-			FastLedDisplayPainter<Width, Height, DataPin>::_fastLedWrapper._screenBuffer[topLeft.y() * Width + x] = fastLedColor;
-			FastLedDisplayPainter<Width, Height, DataPin>::_fastLedWrapper._screenBuffer[bottomRight.y() * Width + x] = fastLedColor;
+			FastLedDisplayPainter<Width, Height, DataPin>::_fastLedWrapper._screenBuffer[pixelAddress(x, topLeft.y())] = fastLedColor;
+			FastLedDisplayPainter<Width, Height, DataPin>::_fastLedWrapper._screenBuffer[pixelAddress(x, bottomRight.y())] = fastLedColor;
 		}
 
 		// Fill in the vertical lines
 		// The first and last horizontal lines of the rect had already been filled in completely by the previous loop over x coordinate
 		for (uint16_t y = topLeft.y() + 1, bottomY = bottomRight.y(); y < bottomY; ++y)
 		{
-			FastLedDisplayPainter<Width, Height, DataPin>::_fastLedWrapper._screenBuffer[y * Width + topLeft.x()] = fastLedColor;
-			FastLedDisplayPainter<Width, Height, DataPin>::_fastLedWrapper._screenBuffer[y * Width + bottomRight.x()] = fastLedColor;
+			FastLedDisplayPainter<Width, Height, DataPin>::_fastLedWrapper._screenBuffer[pixelAddress(topLeft.x(), y)] = fastLedColor;
+			FastLedDisplayPainter<Width, Height, DataPin>::_fastLedWrapper._screenBuffer[pixelAddress(bottomRight.x(), y)] = fastLedColor;
 		}
 	}
 
@@ -58,7 +60,7 @@ public:
 	}
 
 	void setPixel(const Point& pixel, const Color& color) {
-		this->_fastLedWrapper._screenBuffer[pixel.y() * Width + pixel.x()] = crgbFromColor(color);
+		this->_fastLedWrapper._screenBuffer[pixelAddress(pixel.x(), pixel.y())] = crgbFromColor(color);
 	}
 
 	inline void setPixel(uint16_t x, uint16_t y, const Color& color) {
@@ -88,7 +90,7 @@ public:
 		const auto fastLedColor = crgbFromColor(color);
 		for(;;)
 		{
-			this->_fastLedWrapper._screenBuffer[y0 * Width + x0] = fastLedColor;
+			this->_fastLedWrapper._screenBuffer[pixelAddress(x0, y0)] = fastLedColor;
 			if (x0 == x1 && y0 == y1)
 				break;
 
@@ -168,6 +170,10 @@ private:
 		return crgb;
 	}
 
+	static uint16_t pixelAddress(uint16_t x, uint16_t y) {
+		return y * Width + x;
+	}
+
 private:
 	struct FastLedWrapper {
 		inline FastLedWrapper() {
@@ -183,5 +189,5 @@ private:
 	uint8_t _textSize;
 };
 
-template <uint16_t Width, uint16_t Height, uint8_t DataPin, typename Font>
-typename FastLedDisplayPainter<Width, Height, DataPin, Font>::FastLedWrapper FastLedDisplayPainter<Width, Height, DataPin, Font>::_fastLedWrapper;
+template <uint16_t Width, uint16_t Height, uint8_t DataPin, bool Transpose, typename Font>
+typename FastLedDisplayPainter<Width, Height, DataPin, Transpose, Font>::FastLedWrapper FastLedDisplayPainter<Width, Height, DataPin, Transpose, Font>::_fastLedWrapper;
