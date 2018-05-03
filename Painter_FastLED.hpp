@@ -131,11 +131,23 @@ public:
 	}
 
 	void print(const char asciiCharacter) {
-		for (uint16_t glyphY = 0; glyphY < Font::symbolHeight; ++glyphY)
-			for (uint16_t glyphX = 0; glyphX < Font::symbolWidth; ++glyphX)
-				setPixel(Point{_textCursor.x() + glyphX, _textCursor.y() + glyphY}, Font::fontBit(asciiCharacter, glyphX, glyphY) ? _textColorForeground : _textColorBackground);
+		if (asciiCharacter == '\0')
+			return;
+		else if (asciiCharacter == ' ')
+			_textCursor.x() += Font::symbolWidth + 1;
+		else if (asciiCharacter == '\n' || asciiCharacter == '\r')
+		{
+			_textCursor.x() = 0;
+			_textCursor.y() += _textCursor.y() + Font::symbolHeight + 1;
+		}
+		else
+		{
+			for (uint16_t glyphY = 0; glyphY < Font::symbolHeight; ++glyphY)
+				for (uint16_t glyphX = 0; glyphX < Font::symbolWidth; ++glyphX)
+					setPixel(Point{_textCursor.x() + glyphX, _textCursor.y() + glyphY}, Font::fontBit(asciiCharacter, glyphX, glyphY) ? _textColorForeground : _textColorBackground);
 
-		_textCursor.x() += Font::symbolWidth + 1;
+			_textCursor.x() += Font::symbolWidth + 1;
+		}
 	}
 
 	static constexpr uint16_t screenWidth() {
