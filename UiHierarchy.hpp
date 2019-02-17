@@ -62,7 +62,7 @@ public:
 
 	void updateCurrentScreen()
 	{
-		tuple::visit_at(_screens, _currentScreenIndex, ScreenUpdateFunctor());
+		tuple::visit(_screens, _currentScreenIndex, ScreenUpdateFunctor());
 	}
 
 private: // TODO: replace with [](auto& screen) {screen.update();} as soon as Due platform supports this
